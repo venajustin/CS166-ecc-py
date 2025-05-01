@@ -3,7 +3,8 @@
 # www.geeksforgeeks.org/how-to-generate-large-prime-numbers-for-rsa-algorithm/
 #
 
-
+# Not used in ECC encription
+# TODO: delete from project
 
 import random
 
