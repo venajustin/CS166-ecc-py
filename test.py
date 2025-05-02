@@ -1,5 +1,5 @@
 from utility.eccMath import *
-
+from utility.graphing import GraphContext
 
 print("----------------------------------")
 print("test: 1")
@@ -69,3 +69,40 @@ print("multiply by 5")
 x5 = p1.multiply(5, domain)
 print(x5)
 print("verify: ", curve.verifyPoint(x5))
+
+
+print()
+print("----------------------------------")
+
+#
+# Previous tests invalid. ECC math occurs on finite curve with integers numbers. We must test with inputs that are
+# integer coordinates falling within the curve. The following example curve has only 6 points within it's field
+#
+# y^2 = x^3 + 1
+# generator  = ( 2, 3 )
+# order = 6
+# cofactor = 6 / 6 = 1
+#
+domain = Domain(
+    10, # field (don't knwo what to set this to yet)
+    EllipticCurve(0, 1),
+    CurvePoint(2, 3),
+    6,
+    1
+)
+
+ctx = GraphContext()
+domain.draw(ctx)
+
+print(domain.g)
+domain.g.draw(ctx)
+a = domain.g
+for i in range(6):
+    print(a)
+    a = a.add(domain.g, domain)
+    a.draw(ctx)
+
+ctx.flush()
+
+
+

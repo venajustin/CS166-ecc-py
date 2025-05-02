@@ -1,12 +1,18 @@
-
 class Domain:
     # field: int, curve: EllipticCurve, generator: point, n: integer, h: integer
     def __init__(self, field, curve, generator, n, h):
-       self.p = field # field parameter (everything is mod p )
-       self.curve = curve
-       self.g = generator # g is a generator point
-       self.n = n # is ord(g)
-       self.h = h # cofactor
+        self.p = field  # field parameter (everything is mod p )
+        self.curve = curve
+        self.g = generator  # g is a generator point
+        self.n = n  # is ord(g)
+        self.h = h  # cofactor
+
+    def draw(self, ctx):
+        ctx.plt.contour(ctx.x.ravel(), ctx.y.ravel(), pow(ctx.y, 2) - pow(ctx.x, 3) - ctx.x * self.curve.a - self.curve.b, [0])
+        ctx.plt.title('$y^{2} = x^{3}$ + ' + str(self.curve.a) + " * x + " + str(self.curve.b))
+
+
+
 
 class EllipticCurve:
     def __init__(self, a, b):
@@ -17,7 +23,7 @@ class EllipticCurve:
     def verifyPoint(self, point):
         if point == None:
             return False
-        difference = point.y**2 - (point.x**3 + (self.a * point.x) + self.b)
+        difference = point.y ** 2 - (point.x ** 3 + (self.a * point.x) + self.b)
         if difference < .0001 and difference > -0.0001:
             return True
         else:
@@ -25,6 +31,8 @@ class EllipticCurve:
 
     def __str__(self):
         return "Curve: a " + str(self.a) + " b " + str(self.b)
+
+
 
 
 class CurvePoint:
@@ -40,7 +48,7 @@ class CurvePoint:
         output = self
         if coefficient == 1:
             return output
-        
+
         output = output.double(domain)
         if output == None:
             return None
@@ -51,36 +59,52 @@ class CurvePoint:
             if output == None:
                 return None
             # print(output)
+
         return output
 
     def double(self, domain):
-        
+
         if self.y == 0:
             return None
 
         # the slope of the curve at this point
-        slope = ((3 * (self.x**2)) + domain.curve.a) / (2 * self.y)
+        slope = ((3 * (self.x ** 2)) + domain.curve.a) / (2 * self.y)
 
-        newx = slope**2 - (2 * self.x)
+        newx = slope ** 2 - (2 * self.x)
         newy = (slope * (self.x - newx)) - self.y
+
+        # mod within the bounds of domain
+        newx = newx % domain.p
+        newy = newy % domain.p
 
         return CurvePoint(newx, newy)
 
     def add(self, other, domain):
+        if other.x == self.x and other.y == self.y:
+            return self.double(domain)
+
         slope = self.slopeTo(other)
-        if slope == None:
+        if slope is None:
             return None
-        newx = ( slope ** 2 ) - (self.x + other.x)
-        newy = ( slope * (self.x - newx) ) - self.y
-        
+        if slope == 0:
+            return CurvePoint(self.x, -self.y)
+        newx = (slope ** 2) - (self.x + other.x)
+        newy = (slope * (self.x - newx)) - self.y
+
+        # mod within the bounds of domain
+        newx = newx % domain.p
+        newy = newy % domain.p
+
         return CurvePoint(newx, newy)
 
     def slopeTo(self, other):
-        num = ( self.y - other.y )
-        den = ( self.x - other.x )
+        num = (self.y - other.y)
+        den = (self.x - other.x)
         if den == 0:
             return None
         return num / den
 
-
+    def draw(self, ctx):
+        ctx.plt.plot(self.x, self.y, 'bo')
+        ctx.plt.annotate('(' + str(self.x) + ',' + str(self.y) + ')', (self.x, self.y), textcoords="offset points", xytext=(10, 0), ha='left')
 
