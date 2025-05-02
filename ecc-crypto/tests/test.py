@@ -1,5 +1,5 @@
-from utility.eccMath import *
-from utility.graphing import GraphContext
+from src.eccMath import *
+from src.graphing import GraphContext
 
 print("----------------------------------")
 print("test: 1")
