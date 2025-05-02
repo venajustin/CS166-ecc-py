@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Domain:
     # field: int, curve: EllipticCurve, generator: point, n: integer, h: integer
     def __init__(self, field, curve, generator, n, h):
@@ -7,8 +10,28 @@ class Domain:
         self.n = n  # is ord(g)
         self.h = h  # cofactor
 
+
     def draw(self, ctx):
-        ctx.plt.contour(ctx.x.ravel(), ctx.y.ravel(), pow(ctx.y, 2) - pow(ctx.x, 3) - ctx.x * self.curve.a - self.curve.b, [0])
+
+        sections = []
+        if self.p is None:
+
+            y, x = np.ogrid[-5:5:100j, -5:5:100j]
+            sections.append([x, y])
+        else:
+
+            for i in range(5):
+                y, x = np.ogrid[-self.p + 1 + (self.p * i):self.p * i - 2:200j, -self.p + 1 + (self.p * i):self.p * i - 2:200j]
+                sections.append([x,y])
+
+        for [x, y] in sections:
+            if self.p is not None:
+                xmod = x % self.p
+                ymod = y % self.p
+            else:
+                xmod = x
+                ymod = y
+            ctx.plt.contour(xmod.ravel(), ymod.ravel(), pow(y, 2) - pow(x, 3) - x * self.curve.a - self.curve.b, [0])
         ctx.plt.title('$y^{2} = x^{3}$ + ' + str(self.curve.a) + " * x + " + str(self.curve.b))
 
 
@@ -74,8 +97,9 @@ class CurvePoint:
         newy = (slope * (self.x - newx)) - self.y
 
         # mod within the bounds of domain
-        newx = newx % domain.p
-        newy = newy % domain.p
+        if domain.p is not None:
+            newx = newx % domain.p
+            newy = newy % domain.p
 
         return CurvePoint(newx, newy)
 
@@ -92,8 +116,9 @@ class CurvePoint:
         newy = (slope * (self.x - newx)) - self.y
 
         # mod within the bounds of domain
-        newx = newx % domain.p
-        newy = newy % domain.p
+        if domain.p is not None:
+            newx = newx % domain.p
+            newy = newy % domain.p
 
         return CurvePoint(newx, newy)
 

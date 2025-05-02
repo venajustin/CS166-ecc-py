@@ -84,23 +84,26 @@ print("----------------------------------")
 # cofactor = 6 / 6 = 1
 #
 domain = Domain(
-    10, # field (don't knwo what to set this to yet)
+    3, # NoneType p means no field   10, # field (don't knwo what to set this to yet)
     EllipticCurve(0, 1),
     CurvePoint(2, 3),
     6,
     1
 )
 
+
 ctx = GraphContext()
 domain.draw(ctx)
 
 print(domain.g)
-domain.g.draw(ctx)
 a = domain.g
 for i in range(6):
+    if a is None:
+        break
     print(a)
-    a = a.add(domain.g, domain)
     a.draw(ctx)
+
+    a = a.add(domain.g, domain)
 
 ctx.flush()
 
