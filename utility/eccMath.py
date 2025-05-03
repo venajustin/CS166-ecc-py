@@ -2,14 +2,15 @@ import numpy as np
 
 
 class Domain:
-    # field: int, curve: EllipticCurve, generator: point, n: integer, h: integer
+    # field: int,
+    # curve: EllipticCurve,
+    # generator: point, n: integer, h: integer
     def __init__(self, field, curve, generator, n, h):
         self.p = field  # field parameter (everything is mod p )
         self.curve = curve
         self.g = generator  # g is a generator point
         self.n = n  # is ord(g)
         self.h = h  # cofactor
-
 
     def draw(self, ctx):
 
@@ -21,8 +22,9 @@ class Domain:
         else:
 
             for i in range(5):
-                y, x = np.ogrid[-self.p + 1 + (self.p * i):self.p * i - 2:200j, -self.p + 1 + (self.p * i):self.p * i - 2:200j]
-                sections.append([x,y])
+                y, x = np.ogrid[-self.p + 1 + (self.p * i):self.p * i - 2:200j,
+                                -self.p + 1 + (self.p * i):self.p * i - 2:200j]
+                sections.append([x, y])
 
         for [x, y] in sections:
             if self.p is not None:
@@ -31,10 +33,10 @@ class Domain:
             else:
                 xmod = x
                 ymod = y
-            ctx.plt.contour(xmod.ravel(), ymod.ravel(), pow(y, 2) - pow(x, 3) - x * self.curve.a - self.curve.b, [0])
-        ctx.plt.title('$y^{2} = x^{3}$ + ' + str(self.curve.a) + " * x + " + str(self.curve.b))
-
-
+            ctx.plt.contour(xmod.ravel(), ymod.ravel(), pow(
+                y, 2) - pow(x, 3) - x * self.curve.a - self.curve.b, [0])
+        ctx.plt.title('$y^{2} = x^{3}$ + ' +
+                      str(self.curve.a) + " * x + " + str(self.curve.b))
 
 
 class EllipticCurve:
@@ -44,9 +46,10 @@ class EllipticCurve:
         self.b = b
 
     def verifyPoint(self, point):
-        if point == None:
+        if point is None:
             return False
-        difference = point.y ** 2 - (point.x ** 3 + (self.a * point.x) + self.b)
+        difference = point.y ** 2 - \
+            (point.x ** 3 + (self.a * point.x) + self.b)
         if difference < .0001 and difference > -0.0001:
             return True
         else:
@@ -54,8 +57,6 @@ class EllipticCurve:
 
     def __str__(self):
         return "Curve: a " + str(self.a) + " b " + str(self.b)
-
-
 
 
 class CurvePoint:
@@ -73,13 +74,13 @@ class CurvePoint:
             return output
 
         output = output.double(domain)
-        if output == None:
+        if output is None:
             return None
         # print("Multiply: ", self," x ", coefficient)
         # print(output)
         for i in range(coefficient - 2):
             output = output.add(self, domain)
-            if output == None:
+            if output is None:
                 return None
             # print(output)
 
@@ -131,5 +132,5 @@ class CurvePoint:
 
     def draw(self, ctx):
         ctx.plt.plot(self.x, self.y, 'bo')
-        ctx.plt.annotate('(' + str(self.x) + ',' + str(self.y) + ')', (self.x, self.y), textcoords="offset points", xytext=(10, 0), ha='left')
-
+        ctx.plt.annotate('(' + str(self.x) + ',' + str(self.y) + ')', (self.x,
+                         self.y), textcoords="offset points", xytext=(10, 0), ha='left')
