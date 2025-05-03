@@ -133,6 +133,7 @@ class CurvePoint:
         ctx.plt.annotate('(' + str(self.x) + ',' + str(self.y) + ')', (self.x,
                          self.y), textcoords="offset points", xytext=(10, 0), ha='left')
 
+
 class EllipticCurve:
     def __init__(self, a: int, b: int) -> None:
         # curve is defined by y^2 = x^3 + a * x + b
