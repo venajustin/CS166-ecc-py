@@ -44,15 +44,25 @@ class CurvePoint:
         if self.y == 0:
             return None
         
-        num = (3 * (self.x ** 2) + a) % p
-        den = (2 * self.y) % p
-        if den == 0:                # division by zero check
-            return None
-        multinv_den = pow(den, -1, p)
-        slope = (num * multinv_den) % p
-
-        newx = ((slope ** 2) - (2 * self.x)) % p
-        newy = ((slope * (self.x - newx)) - self.y) % p
+        # finite‐field branch
+        if isinstance(p, int):
+            num = (3 * (self.x ** 2) + a) % p
+            den = (2 * self.y) % p
+            if den == 0:
+                return None
+            inv_den = pow(den, -1, p)
+            slope = (num * inv_den) % p
+            newx = (slope * slope - 2 * self.x) % p
+            newy = (slope * (self.x - newx) - self.y) % p
+        # real branch
+        else:
+            num = 3 * (self.x ** 2) + a
+            den = 2 * self.y
+            if den == 0:
+                return None
+            slope = num / den
+            newx = slope * slope - 2 * self.x
+            newy = slope * (self.x - newx) - self.y
 
         return CurvePoint(newx, newy)
 
@@ -70,13 +80,28 @@ class CurvePoint:
 
         # case when both points are the same
         if other.x == self.x and other.y == self.y:     # P + P = 2P
-            if (2 * self.y) % p == 0:
-                return None
+            # finite-field branch
+            if isinstance(p, int):
+                if (2 * self.y) % p == 0:
+                    return None
+            # real branch
+            else:
+                if (2 * self.y) == 0:
+                    return None
             return self.double(domain)
 
-        slope = self.slopeTo(other, domain)  
-        newx = ((slope ** 2) - (self.x + other.x)) % p
-        newy = ((slope * (self.x - newx)) - self.y) % p
+        slope = self.slopeTo(other, domain) 
+        if slope is None:
+            return None
+         
+        # finite‐field
+        if isinstance(p, int):
+            newx = ((slope ** 2) - (self.x + other.x)) % p
+            newy = ((slope * (self.x - newx)) - self.y) % p
+        # real
+        else:
+            newx = slope ** 2 - (self.x + other.x)
+            newy = slope * (self.x - newx) - self.y
 
         return CurvePoint(newx, newy)
 
@@ -85,26 +110,28 @@ class CurvePoint:
             raise TypeError("Slope calculation must be performed on given two curve points and a domain")
         p = domain.field
 
-        num = (self.y - other.y) % p
-        den = (self.x - other.x) % p
-        if den == 0:                # division by zero check
+        # finite‐field
+        if isinstance(p, int):
+            num = (self.y - other.y) % p
+            den = (self.x - other.x) % p
+            if den == 0:
                 return None
-        multinv_den = pow(den, -1, p)
-        slope = (num * multinv_den) % p
+            inv_den = pow(den, -1, p)
+            return (num * inv_den) % p
+        # real
+        else:
+            num = self.y - other.y
+            den = self.x - other.x
+            if den == 0:
+                return None
+            return num / den
 
         return slope
 
     def draw(self, ctx):
-        if not hasattr(ctx, 'ax'):
-            raise TypeError("The graphing context must have an 'ax' attribute.")
-        if not callable(getattr(ctx.ax, 'plot', None)):
-            raise TypeError("ctx.ax must have a callable 'plot' method.")
-        if not callable(getattr(ctx.ax, 'annotate', None)):
-            raise TypeError("ctx.ax must have a callable 'annotate' method.")
-        
-        # draw the plot using blue and annotate the points
-        ctx.ax.plot(self.x, self.y, 'bo')
-        ctx.ax.annotate(f'({self.x}, {self.y})', (self.x, self.y), textcoords="offset points", xytext=(0,10), ha='center')
+        ctx.plt.plot(self.x, self.y, 'bo')
+        ctx.plt.annotate('(' + str(self.x) + ',' + str(self.y) + ')', (self.x,
+                         self.y), textcoords="offset points", xytext=(10, 0), ha='left')
 
 class EllipticCurve:
     def __init__(self, a: int, b: int) -> None:
@@ -118,11 +145,16 @@ class EllipticCurve:
         
         p = domain.field
 
-        lhs = pow(point.y, 2, p)
-        rhs = (pow(point.x, 3, p) + self.a * point.x + self.b) % p
-        return lhs == rhs
+        # finite‑field
+        if isinstance(p, int):
+            lhs = pow(point.y, 2, p)
+            rhs = (pow(point.x, 3, p) + self.a * point.x + self.b) % p
+            return lhs == rhs
+        # real
+        else:
+            return point.y**2 == (point.x**3 + self.a * point.x + self.b)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Curve: a " + str(self.a) + " b " + str(self.b)
     
 
@@ -136,29 +168,27 @@ class Domain:
         self.h = h              # cofactor
 
 
-    def draw(self, ctx):
-        if not hasattr(ctx, 'plt'):
-            raise TypeError("The drawing context must have a 'plt' attribute.")
-        if not hasattr(ctx, 'ax'):
-            raise TypeError("The drawing context must have an 'ax' attribute.")
-        if not callable(getattr(ctx.ax, 'contour', None)):
-            raise TypeError("ctx.ax must have a callable 'contour' method.")
-        if not callable(getattr(ctx.plt, 'title', None)):
-            raise TypeError("ctx.plt must have a callable 'title' method.")
-
+    def draw(self, ctx) -> None:
         sections = []
-        p = self.field
+        if self.p is None:
 
-        for i in range(5):
-            start = -p + 1 + (p * i)
-            stop = p * i -2
-            y, x = np.ogrid[start:stop:200j, start:stop:200j]
-            sections.append([x,y])
+            y, x = np.ogrid[-5:5:100j, -5:5:100j]
+            sections.append([x, y])
+        else:
+
+            for i in range(5):
+                y, x = np.ogrid[-self.p + 1 + (self.p * i):self.p * i - 2:200j,
+                                -self.p + 1 + (self.p * i):self.p * i - 2:200j]
+                sections.append([x, y])
 
         for [x, y] in sections:
-            xmod = x % p
-            ymod = y % p
-
-        # plot the curve
-        ctx.plt.contour(xmod.ravel(), ymod.ravel(), pow(y, 2) - pow(x, 3) - x * self.curve.a - self.curve.b, [0])
-        ctx.plt.title('$y^{2} = x^{3}$ + ' + str(self.curve.a) + " * x + " + str(self.curve.b))
+            if self.p is not None:
+                xmod = x % self.p
+                ymod = y % self.p
+            else:
+                xmod = x
+                ymod = y
+            ctx.plt.contour(xmod.ravel(), ymod.ravel(), pow(
+                y, 2) - pow(x, 3) - x * self.curve.a - self.curve.b, [0])
+        ctx.plt.title('$y^{2} = x^{3}$ + ' +
+                      str(self.curve.a) + " * x + " + str(self.curve.b))
