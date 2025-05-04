@@ -1,4 +1,62 @@
-from .eccMath import Domain, CurvePoint
+from .eccMath import Domain, CurvePoint, EllipticCurve
+
+# secp192k1 parameters
+secp192k1_field = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFEE37  # standard prime for secp192k1
+secp192k1_curve = EllipticCurve(a=0, b=3)
+secp192k1_generator = CurvePoint(
+    x=0xDB4FF10EC057E9AE26B07D0280B7F4341DA5D1B1EAE06C7D,
+    y=0x9B2F2F6D9C5628A7844163D015BE86344082AA88D95E2F9D
+)
+secp192k1_n = 0xFFFFFFFFFFFFFFFFFFFFFFFE26F2FC170F69466A74DEFD8D
+secp192k1_h = 1
+
+
+# secp256k1 parameters
+secp256k1_field = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+secp256k1_curve = EllipticCurve(a=0, b=7)
+secp256k1_generator = CurvePoint(
+    x=0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
+    y=0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8
+)
+secp256k1_n = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+secp256k1_h = 1
+
+recommendedCurves = {
+    "secp192k1": Domain(
+        field=secp192k1_field,
+        curve=secp192k1_curve,
+        generator=secp192k1_generator,
+        n=secp192k1_n,
+        h=secp192k1_h
+    ),
+    "secp256k1": Domain(
+        field=secp256k1_field,
+        curve=secp256k1_curve,
+        generator=secp256k1_generator,
+        n=secp256k1_n,
+        h=secp256k1_h
+    )
+}
+
+def listCurves(curve_id: str = None) -> list:
+    if curve_id is None:
+        return list(recommendedCurves.keys())
+    else:
+        if curve_id in recommendedCurves:
+            domain = recommendedCurves[curve_id]
+            return {
+                "identifier": curve_id,
+                "field": domain.field,
+                "curve_a": domain.curve.a,
+                "curve_b": domain.curve.b,
+                "generator_x": domain.g.x,
+                "generator_y": domain.g.y,
+                "n": domain.n,
+                "h": domain.h 
+            }
+        else:
+            raise ValueError(f"Curve {curve_id} not found in recommended curves list")
+   
 
 def eccGenPublic(private_key: int, domain: Domain) -> CurvePoint:
     if not isinstance(private_key, int) or not isinstance(domain, Domain):
