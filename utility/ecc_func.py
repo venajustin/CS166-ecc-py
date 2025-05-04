@@ -8,7 +8,7 @@ def eccGenPublic(private_key: int, domain: Domain) -> CurvePoint:
     if private_key >= domain.n:
         raise ValueError("Private key must be less than the order of the base point.")
 
-    public_key = domain.generator.multiply(private_key, domain)
+    public_key = domain.g.multiply(private_key, domain)
     if public_key is None:
         raise ValueError("Private key multiplication with the genrator point resulted in a point at infinity.")
     if not domain.verifyPoint(public_key):

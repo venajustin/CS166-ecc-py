@@ -1,9 +1,89 @@
 import numpy as np
 
+class CurvePoint:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return "Point x " + str(self.x) + " y " + str(self.y)
+
+    def multiply(self, coefficient, domain):
+
+        output = self
+        if coefficient == 1:
+            return output
+
+        output = output.double(domain)
+        if output == None:
+            return None
+        # print("Multiply: ", self," x ", coefficient)
+        # print(output)
+        for i in range(coefficient - 2):
+            output = output.add(self, domain)
+            if output == None:
+                return None
+            # print(output)
+
+        return output
+
+    def double(self, domain):
+
+        if self.y == 0:
+            return None
+
+        # the slope of the curve at this point
+        slope = ((3 * (self.x ** 2)) + domain.curve.a) * domain.inv_mod_p(2 * self.y)
+
+        newx = slope ** 2 - (2 * self.x)
+        newy = (slope * (self.x - newx)) - self.y
+
+        # mod within the bounds of domain
+        if domain.p is not None:
+            newx = newx % domain.p
+            newy = newy % domain.p
+
+        return CurvePoint(newx, newy)
+
+    def add(self, other, domain):
+        if other.x == self.x and other.y == self.y:
+            return self.double(domain)
+
+        slope = self.slopeTo(other, domain)
+        if slope is None:
+            return None
+        if slope == 0:
+            new_y = (-self.y) % domain.p        # negative y value modded by p to get in-field value
+            return CurvePoint(self.x, new_y)
+        newx = (slope ** 2) - (self.x + other.x)
+        newy = (slope * (self.x - newx)) - self.y
+
+        # mod within the bounds of domain
+        if domain.p is not None:
+            newx = newx % domain.p
+            newy = newy % domain.p
+
+        return CurvePoint(newx, newy)
+
+    def slopeTo(self, other, domain):
+        num = (self.y - other.y)
+        den = (self.x - other.x)
+        if den == 0:
+            return None
+        # in order to do division within this field we use the inverse fn
+        # return num / den
+        return num * domain.inv_mod_p(den)
+
+    def draw(self, ctx):
+        ctx.plt.plot(self.x, self.y, 'bo')
+        ctx.plt.annotate('(' + str(self.x) + ',' + str(self.y) + ')', (self.x, self.y), textcoords="offset points", xytext=(10, 0), ha='left')
+
+    def inverse(self, domain):
+        return CurvePoint(self.x, (-self.y)%domain.p)
 
 class Domain:
     # field: int, curve: EllipticCurve, generator: point, n: integer, h: integer
-    def __init__(self, field, curve, generator, n, h):
+    def __init__(self, field, curve, generator: CurvePoint, n, h):
         self.p = field  # field parameter (everything is mod p )
         self.curve = curve
         self.g = generator  # g is a generator point
@@ -60,86 +140,3 @@ class EllipticCurve:
 
     def __str__(self):
         return "Curve: a " + str(self.a) + " b " + str(self.b)
-
-
-
-
-class CurvePoint:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return "Point x " + str(self.x) + " y " + str(self.y)
-
-    def multiply(self, coefficient, domain):
-
-        output = self
-        if coefficient == 1:
-            return output
-
-        output = output.double(domain)
-        if output == None:
-            return None
-        # print("Multiply: ", self," x ", coefficient)
-        # print(output)
-        for i in range(coefficient - 2):
-            output = output.add(self, domain)
-            if output == None:
-                return None
-            # print(output)
-
-        return output
-
-    def double(self, domain):
-
-        if self.y == 0:
-            return None
-
-        # the slope of the curve at this point
-        slope = ((3 * (self.x ** 2)) + domain.curve.a) * domain.inv_mod_p(2 * self.y)
-
-        newx = slope ** 2 - (2 * self.x)
-        newy = (slope * (self.x - newx)) - self.y
-
-        # mod within the bounds of domain
-        if domain.p is not None:
-            newx = newx % domain.p
-            newy = newy % domain.p
-
-        return CurvePoint(newx, newy)
-
-    def add(self, other, domain):
-        if other.x == self.x and other.y == self.y:
-            return self.double(domain)
-
-        slope = self.slopeTo(other, domain)
-        if slope is None:
-            return None
-        if slope == 0:
-            return CurvePoint(self.x, -self.y)
-        newx = (slope ** 2) - (self.x + other.x)
-        newy = (slope * (self.x - newx)) - self.y
-
-        # mod within the bounds of domain
-        if domain.p is not None:
-            newx = newx % domain.p
-            newy = newy % domain.p
-
-        return CurvePoint(newx, newy)
-
-    def slopeTo(self, other, domain):
-        num = (self.y - other.y)
-        den = (self.x - other.x)
-        if den == 0:
-            return None
-        # in order to do division within this field we use the inverse fn
-        # return num / den
-        return num * domain.inv_mod_p(den)
-
-    def draw(self, ctx):
-        ctx.plt.plot(self.x, self.y, 'bo')
-        ctx.plt.annotate('(' + str(self.x) + ',' + str(self.y) + ')', (self.x, self.y), textcoords="offset points", xytext=(10, 0), ha='left')
-
-    def inverse(self, domain):
-        return CurvePoint(self.x, (-self.y)%domain.p)
