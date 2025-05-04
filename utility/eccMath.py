@@ -10,7 +10,8 @@ class Domain:
         self.n = n  # is ord(g)
         self.h = h  # cofactor
 
-
+    def __str__(self):
+        return f"Domain: (p: {self.p}, curve: {str(self.curve)}, g: {str(self.g)}, n: {self.n}, h: {self.h})"
 
     def verifyPoint(self, point):
         if point is None:
