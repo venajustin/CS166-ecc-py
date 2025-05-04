@@ -17,7 +17,7 @@ domain = Domain(
 
 
 ctx = GraphContext()
-domain.draw(ctx)
+ctx.draw(domain)
 
 print(domain.g)
 a = domain.g
@@ -25,9 +25,9 @@ for i in range(6):
     if a is None:
         break
     print(a)
-    a.draw(ctx)
+    ctx.draw(a)
 
-    a = a.add(domain.g, domain)
+    a = domain.add(a, domain.g)
 
 ctx.flush()
 
@@ -43,7 +43,7 @@ domain = Domain(
 
 
 ctx = GraphContext()
-domain.draw(ctx)
+ctx.draw(domain)
 
 print(domain.g)
 a = domain.g
@@ -51,11 +51,11 @@ for i in range(6):
     if a is None:
         break
     print(a)
-    a.draw(ctx)
+    ctx.draw(a)
 
     print("verify: ", domain.verifyPoint(a))
 
-    a = a.add(domain.g, domain)
+    a = domain.add(a, domain.g)
 
 ctx.flush()
 
@@ -70,20 +70,27 @@ domain = Domain(
     0 # not needed
 )
 P = CurvePoint(6, 15)
-P.draw(ctx)
+ctx.draw(P)
+
 Q = CurvePoint(8, 1267)
-Q.draw(ctx)
+ctx.draw(Q)
+
 R = CurvePoint(2, 3103)
-R.draw(ctx)
-TwoP = P.add(P, domain)
-TwoP.draw(ctx)
-ThreeP = TwoP.add(P, domain)
-ThreeP.draw(ctx)
+ctx.draw(R)
+
+TwoP = domain.add( P, P)
+ctx.draw(TwoP)
+
+ThreeP = domain.add(TwoP, P)
+ctx.draw(ThreeP)
+
 ctx.flush()
-FourP1 = P.add(ThreeP, domain)
-FourP2 = TwoP.add(TwoP, domain)
-assoc1 = P.add(Q.add(R, domain), domain)
-assoc2 = P.add(Q, domain).add(R, domain)
+
+FourP1 = domain.add(P,ThreeP)
+FourP2 = domain.add(TwoP, TwoP)
+assoc1 = domain.add(P, domain.add(Q, R))
+assoc2 = domain.add(domain.add(P, Q), R)
+
 print("FourP2: ", FourP2)
 print("FourP2: ", FourP2)
 
@@ -110,7 +117,7 @@ domain = Domain(
 
 
 ctx = GraphContext()
-domain.draw(ctx)
+ctx.draw(domain)
 
 print(domain.g)
 a = domain.g
@@ -118,10 +125,30 @@ for i in range(6):
     if a is None:
         break
     print(a)
-    a.draw(ctx)
+    ctx.draw(a)
 
     print("verify: ", domain.verifyPoint(a))
 
-    a = a.add(domain.g, domain)
+    a = domain.add(a, domain.g)
 
 ctx.flush()
+
+
+domain = Domain(
+    None,
+    EllipticCurve(0, 1),
+    CurvePoint(2, 3),
+    6,
+    0
+)
+
+a = 2
+b = domain.multiply(domain.g, a)
+print(b)
+print("veryify: ", domain.verifyPoint(b))
+
+ctx.draw(domain)
+ctx.draw(domain.g)
+ctx.draw(b)
+ctx.flush()
+

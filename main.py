@@ -78,7 +78,7 @@ def read_public_key_file(filename):
 def create_domain_object(data):
     try:
         field_str = data.get('Field', None)
-        field = 99999999999999 if field_str.lower() == 'none' else int(field_str)
+        field = None if field_str.lower() == 'none' else int(field_str)
         a = int(data.get('a', None))
         b = int(data.get('b', None))
         generator_str = data.get('Generator', None)
