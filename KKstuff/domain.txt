@@ -1,7 +1,6 @@
 Field:None
 a:0
 b:1
-Generatorx:2
-Generatory:3
+Generator:(2,3)
 Order:6
 Cofactor:1
