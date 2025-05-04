@@ -13,27 +13,40 @@ class Domain:
 
     def draw(self, ctx):
 
-        sections = []
         if self.p is None:
 
             y, x = np.ogrid[-5:5:100j, -5:5:100j]
-            sections.append([x, y])
-        else:
+            ctx.plt.contour(y.ravel(), x.ravel(), (pow(y, 2) - pow(x, 3) - x * self.curve.a - self.curve.b), [0])
 
-            for i in range(5):
-                y, x = np.ogrid[-self.p + 1 + (self.p * i):self.p * i - 2:200j, -self.p + 1 + (self.p * i):self.p * i - 2:200j]
-                sections.append([x,y])
+        # else:
+        #     #  we can't plot the graph in this state, but we can graph integer points in this way
+        #     a = self.g
+        #     while a is not None:
+        #         a.draw(ctx)
+        #         a = a.add(self.g, self)
 
-        for [x, y] in sections:
-            if self.p is not None:
-                xmod = x % self.p
-                ymod = y % self.p
-            else:
-                xmod = x
-                ymod = y
-            ctx.plt.contour(xmod.ravel(), ymod.ravel(), pow(y, 2) - pow(x, 3) - x * self.curve.a - self.curve.b, [0])
         ctx.plt.title('$y^{2} = x^{3}$ + ' + str(self.curve.a) + " * x + " + str(self.curve.b))
 
+    def verifyPoint(self, point):
+        if point is None:
+            return True
+        if self.p is not None:
+            difference = (point.y ** 2 - (point.x ** 3 + self.curve.a * point.x + self.curve.b)) % self.p
+            return (
+                    .0001 > difference > -0.0001
+                    and
+                    0 <= point.x < self.p and 0 <= point.y < self.p
+            )
+        else:
+            difference = point.y ** 2 - (point.x ** 3 + (self.curve.a * point.x) + self.curve.b)
+            return .0001 > difference > -0.0001
+
+    def inv_mod_p(self, x):
+        if self.p is None: # real
+            return 1 / x
+        if x % self.p == 0: # finite field
+            raise ZeroDivisionError("no inverse for " + x + " in field")
+        return pow(x, self.p-2, self.p)
 
 
 
@@ -43,14 +56,7 @@ class EllipticCurve:
         self.a = a
         self.b = b
 
-    def verifyPoint(self, point):
-        if point == None:
-            return False
-        difference = point.y ** 2 - (point.x ** 3 + (self.a * point.x) + self.b)
-        if difference < .0001 and difference > -0.0001:
-            return True
-        else:
-            return False
+
 
     def __str__(self):
         return "Curve: a " + str(self.a) + " b " + str(self.b)
@@ -91,7 +97,7 @@ class CurvePoint:
             return None
 
         # the slope of the curve at this point
-        slope = ((3 * (self.x ** 2)) + domain.curve.a) / (2 * self.y)
+        slope = ((3 * (self.x ** 2)) + domain.curve.a) * domain.inv_mod_p(2 * self.y)
 
         newx = slope ** 2 - (2 * self.x)
         newy = (slope * (self.x - newx)) - self.y
@@ -107,7 +113,7 @@ class CurvePoint:
         if other.x == self.x and other.y == self.y:
             return self.double(domain)
 
-        slope = self.slopeTo(other)
+        slope = self.slopeTo(other, domain)
         if slope is None:
             return None
         if slope == 0:
@@ -122,14 +128,18 @@ class CurvePoint:
 
         return CurvePoint(newx, newy)
 
-    def slopeTo(self, other):
+    def slopeTo(self, other, domain):
         num = (self.y - other.y)
         den = (self.x - other.x)
         if den == 0:
             return None
-        return num / den
+        # in order to do division within this field we use the inverse fn
+        # return num / den
+        return num * domain.inv_mod_p(den)
 
     def draw(self, ctx):
         ctx.plt.plot(self.x, self.y, 'bo')
         ctx.plt.annotate('(' + str(self.x) + ',' + str(self.y) + ')', (self.x, self.y), textcoords="offset points", xytext=(10, 0), ha='left')
 
+    def inverse(self, domain):
+        return CurvePoint(self.x, (-self.y)%domain.p)
