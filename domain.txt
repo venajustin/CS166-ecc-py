@@ -1,6 +1,6 @@
-Field:8
-a:0
-b:1
-Generator:(2,3)
-Order:6
+Field:17
+a:2
+b:2
+Generator:(5,1)
+Order:19
 Cofactor:1

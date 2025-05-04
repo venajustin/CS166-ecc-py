@@ -14,8 +14,8 @@
 
 
 import argparse
-from eccMath import CurvePoint, Domain, EllipticCurve
-from ecc_func import *
+from utility.eccMath import *
+from utility.ecc_func import *
 
 def read_domain_file(filename):
     domain_data = {}
