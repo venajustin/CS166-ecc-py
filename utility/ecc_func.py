@@ -24,8 +24,13 @@ def eccGenShared(private_key: int, public_key: CurvePoint, domain: Domain) -> Cu
         raise ValueError("Private key must be less than the order of the base point.")
     if not domain.verifyPoint(public_key):
         raise ValueError("The provided public key is not on the elliptic curve defined by the domain.")
-    
-    shared_key =  domain.multiply(public_key, private_key)
+
+
+    shared_key = public_key
+    while private_key > 0:
+        shared_key = domain.add(shared_key, domain.g)
+        private_key -= 1
+
     if shared_key is None:
         raise ValueError("Private key multiplication with the public key resulted in a point at infinity.")
     if not domain.verifyPoint(shared_key):

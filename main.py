@@ -53,6 +53,7 @@ def read_public_key_file(filename):
     try:
         with open(filename, 'r') as f:
 
+
             content = f.read().strip()
 
             if content.startswith('(') and content.endswith(')'):
@@ -163,7 +164,7 @@ if __name__ == "__main__":
 
             try:
                 with open(args.output_file, 'w') as outfile:
-                    outfile.write(f"PublicKey:({public_key.x},{public_key.y})")
+                    outfile.write(f"({int(public_key.x)},{int(public_key.y)})")
                     print(f"Public key written to {args.output_file}")
             except Exception as e:
                 print(f"Error writing to output file: {e}")

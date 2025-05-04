@@ -1,4 +1,5 @@
 from utility.eccMath import EllipticCurve, Domain, CurvePoint
+from utility.ecc_func import eccGenShared
 from utility.graphing import GraphContext
 
 #
@@ -151,4 +152,7 @@ ctx.draw(domain)
 ctx.draw(domain.g)
 ctx.draw(b)
 ctx.flush()
+
+
+
 

@@ -71,6 +71,14 @@ class Domain:
         return CurvePoint(newx, newy)
 
     def add(self, point1, point2):
+
+        if point1 is None and point2 is None:
+            return None
+        if point1 is None:
+            return point2
+        if point2 is None:
+            return point1
+
         if point2.x == point1.x and point2.y == point1.y:
             return self.double(point1)
 
