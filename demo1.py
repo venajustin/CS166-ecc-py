@@ -18,10 +18,9 @@ inter.draw(domain)
 sec1 = 2
 sec2 = 1
 print("domain: " + str(domain))
-print("secret1: " +  str(sec1))
-print("secret2: " +  str(sec2))
+print("private key 1: " +  str(sec1))
+print("private key 2: " +  str(sec2))
 pub1 = eccGenPublic(sec1, domain)
-
 
 inter.draw(domain.g)
 

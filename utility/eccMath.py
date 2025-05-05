@@ -17,7 +17,7 @@ class Domain:
         if point is None:
             return True
         if self.p is not None:
-            difference = (point.y ** 2 - (point.x ** 3 + self.curve.a * point.x + self.curve.b)) % self.p
+            difference = (point.y ** 2 - (point.x ** 3 + (self.curve.a * point.x) + self.curve.b)) % self.p
             return (
                     .0001 > difference > -0.0001
                     and
@@ -47,8 +47,8 @@ class Domain:
         # print(output)
         for i in range(coefficient - 2):
             output = self.add(output, point)
-            if output == None:
-                return None
+            # if output == None:
+              #  return None
             # print(output)
 
         return output
@@ -76,9 +76,15 @@ class Domain:
         if point1 is None and point2 is None:
             return None
         if point1 is None:
-            return point2
+            if self.p is not None:
+                return CurvePoint(point2.x % self.p, point2.y % self.p)
+            else:
+                return point2
         if point2 is None:
-            return point1
+            if self.p is not None:
+                return CurvePoint(point1.x % self.p, point1.y % self.p)
+            else:
+                return point1
 
         if point2.x == point1.x and point2.y == point1.y:
             return self.double(point1)
@@ -105,7 +111,11 @@ class Domain:
             return None
         # in order to do division within this field we use the inverse fn
         # return num / den
-        return num * self.inv_mod_p(den)
+
+        try:
+            return num * self.inv_mod_p(den)
+        except:
+            return None
 
 
     def inverse(self, point):

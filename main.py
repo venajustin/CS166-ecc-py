@@ -178,6 +178,8 @@ if __name__ == "__main__":
 
         elif args.mode == 'genshared':
             public_key_x, public_key_y = read_public_key_file(args.public_key_file) # Added function
+            print(f"Extracted Public Key: ({public_key_x},{public_key_y})")
+
             if public_key_x is not None and public_key_y is not None: 
                 other_public_key = CurvePoint(public_key_x, public_key_y)
                 shared_secret_key = eccGenShared(private_key, other_public_key, domain_object)
