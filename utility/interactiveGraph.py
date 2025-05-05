@@ -66,7 +66,7 @@ class InteractiveContext:
     def draw_add(self, point1, point2, domain):
         output = domain.add(point1, point2)
         inverse = domain.inverse(output)
-        if point1 is None or point2 is None or domain is None:
+        if point1 is None or point2 is None or inverse is None:
             return
         x = [point1.x, point2.x, inverse.x]
         y = [point1.y, point2.y, inverse.y]

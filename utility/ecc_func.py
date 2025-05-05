@@ -1,4 +1,5 @@
 from .eccMath import Domain, CurvePoint, EllipticCurve
+from .interactiveGraph import InteractiveContext
 
 # secp192k1 parameters
 secp192k1_field = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFEE37  # standard prime for secp192k1
@@ -66,7 +67,22 @@ def eccGenPublic(private_key: int, domain: Domain) -> CurvePoint:
     if private_key >= domain.n:
         raise ValueError("Private key must be less than the order of the base point.")
 
-    public_key = domain.multiply(domain.g, private_key)
+    if domain.p is not None:
+        public_key = domain.multiply(domain.g, private_key)
+
+    else:
+        # We will try to display live view if the domain is None
+        ctx = InteractiveContext()
+        ctx.draw(domain)
+        public_key = domain.g
+        ctx.draw(public_key)
+        while private_key > 1:
+            ctx.draw_add(public_key, domain.g, domain)
+            public_key = domain.add(public_key, domain.g)
+            ctx.draw(public_key)
+            private_key -= 1
+        ctx.start()
+
     # if public_key is None:
       #   raise ValueError("Private key multiplication with the genrator point resulted in a point at infinity.")
     if not domain.verifyPoint(public_key):
@@ -83,11 +99,26 @@ def eccGenShared(private_key: int, public_key: CurvePoint, domain: Domain) -> Cu
     if not domain.verifyPoint(public_key):
         raise ValueError("The provided public key is not on the elliptic curve defined by the domain.")
 
+    if domain.p is not None:
+        shared_key = public_key
+        while private_key > 0:
+            shared_key = domain.add(shared_key, domain.g)
+            private_key -= 1
 
-    shared_key = public_key
-    while private_key > 0:
-        shared_key = domain.add(shared_key, domain.g)
-        private_key -= 1
+    else:
+        # We will try to display live view if the domain is None
+        ctx = InteractiveContext()
+        ctx.draw(domain)
+        shared_key = public_key
+        ctx.draw(domain.g)
+
+        ctx.draw(public_key)
+        while private_key > 0:
+            ctx.draw_add(shared_key, domain.g, domain)
+            shared_key = domain.add(shared_key, domain.g)
+            ctx.draw(shared_key)
+            private_key -= 1
+        ctx.start()
 
     if shared_key is None:
         raise ValueError("Private key multiplication with the public key resulted in a point at infinity.")
