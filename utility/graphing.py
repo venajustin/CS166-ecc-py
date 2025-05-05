@@ -14,8 +14,6 @@ class GraphContext:
 
         self.plt = plt
 
-
-
     def flush(self):
         self.plt.grid()
         self.plt.show()

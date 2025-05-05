@@ -1,6 +1,7 @@
 from utility.eccMath import EllipticCurve, Domain, CurvePoint
 from utility.ecc_func import eccGenShared, eccGenPublic
 from utility.graphing import GraphContext
+from utility.interactiveGraph import InteractiveContext
 
 #
 # y^2 = x^3 + 1
@@ -33,7 +34,7 @@ for i in range(6):
 ctx.flush()
 
 
-
+ctx = GraphContext()
 domain = Domain(
     4,
     EllipticCurve(0, 1),
@@ -61,7 +62,7 @@ for i in range(6):
 ctx.flush()
 
 
-
+ctx = GraphContext()
 # test 3
 domain = Domain(
     15733,
@@ -87,6 +88,7 @@ ctx.draw(ThreeP)
 
 ctx.flush()
 
+
 FourP1 = domain.add(P,ThreeP)
 FourP2 = domain.add(TwoP, TwoP)
 assoc1 = domain.add(P, domain.add(Q, R))
@@ -107,6 +109,8 @@ print(domain.verifyPoint(ThreeP))
 print(domain.verifyPoint(FourP1))
 print(domain.verifyPoint(assoc1))
 
+
+ctx = GraphContext()
 #test 4
 domain = Domain( # secp192k1
     0xfffffffffffffffffffffffffffffffffffffffeffffee37,
@@ -134,7 +138,7 @@ for i in range(10):
 
 ctx.flush()
 
-
+ctx = GraphContext()
 domain = Domain(
     None,
     EllipticCurve(0, 1),
@@ -153,6 +157,9 @@ ctx.draw(domain.g)
 ctx.draw(b)
 ctx.flush()
 
+
+
+ctx = GraphContext()
 domain = Domain(
     None,
     EllipticCurve(0, 1),
@@ -187,5 +194,47 @@ ctx.flush()
 
 
 
+# interactive test
+
+
+# ctx = GraphContext()
+inter = InteractiveContext()
+domain = Domain(
+    None,
+    EllipticCurve(0, 1),
+    CurvePoint(2, 3),
+    6,
+    1
+)
+inter.draw(domain)
+
+inter.draw(domain.g)
+inter.start()
+
+# ctx.draw(domain)
+sec1 = 2
+sec2 = 1
+print("domain: " + str(domain))
+print("secret1: " +  str(sec1))
+print("secret2: " +  str(sec2))
+pub1 = eccGenPublic(sec1, domain)
+
+# ctx.draw(domain.g)
+# ctx.draw(pub1)
+print("public: ", pub1)
+
+pub2 = eccGenPublic(sec2, domain)
+# ctx.draw(pub2)
+print("public2: ", pub2)
+
+shared1 = eccGenShared(sec2, pub1, domain)
+print("shared1: ", shared1)
+# ctx.draw(shared1)
+
+shared2 = eccGenShared(sec1, pub2, domain)
+print("shared2: ", shared2)
+# ctx.draw(shared2)
+
+# ctx.flush()
 
 

@@ -109,8 +109,12 @@ class Domain:
 
 
     def inverse(self, point):
-        return CurvePoint(point.x, (-point.y)%self.p)
-
+        if point is None:
+            return None
+        if self.p is not None:
+            return CurvePoint(point.x, (-point.y)%self.p)
+        else:
+            return CurvePoint(point.x, (-point.y))
 
     def draw(self, ctx):
         ctx.plt.plot(self.x, self.y, 'bo')
