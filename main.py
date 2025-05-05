@@ -139,7 +139,7 @@ if __name__ == "__main__":
     getcurve_parser = subparsers.add_parser('getcurve', help='List or export recommended curves.')
     # optional curve identifier and output file; when neither provided, list all curves
     getcurve_parser.add_argument("curve_id", nargs="?", help="Optional: Identifier of the curve, e.g., secp256k1")
-    getcurve_parser.add_argument("output_file", nargs="?", help="Optional: Output .txt file to export the curve parameters")
+    getcurve_parser.add_argument("output_file", nargs="?", help="Optional: Output to a  file to export the curve parameters")
 
 
     args = parser.parse_args()
@@ -204,13 +204,10 @@ if __name__ == "__main__":
 
         # only curve_id provided --> not valid command interface format
         elif args.curve_id is not None and args.output_file is None:
-            print("Error: When specifying a curve identifier, you must also provide an output file with .txt extension.")
+            print("Error: When specifying a curve identifier, you must also provide an output file")
 
         # both curve_id and output_file provided -> export curve parameters to output_file
         elif args.curve_id is not None and args.output_file is not None:
-            if not args.output_file.endswith('.txt'):
-                print("Error: Output file must have a .txt extension.")
-            else:
                 try:
                     # check if the supplied curve_id is listed in recommendedCurves
                     if args.curve_id not in recommendedCurves:
