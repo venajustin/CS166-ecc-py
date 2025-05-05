@@ -108,10 +108,10 @@ print(domain.verifyPoint(FourP1))
 print(domain.verifyPoint(assoc1))
 
 #test 4
-domain = Domain(
-    4,
-    EllipticCurve(0, 7),
-    CurvePoint(2, 3),
+domain = Domain( # secp192k1
+    0xfffffffffffffffffffffffffffffffffffffffeffffee37,
+    EllipticCurve(0, 3),
+    CurvePoint(0xdb4ff10ec057e9ae26b07d0280b7f4341da5d1b1eae06c7d, 0x9b2f2f6d9c5628a7844163d015be86344082aa88d95e2f9d),
     6,
     1
 )
@@ -122,7 +122,7 @@ ctx.draw(domain)
 
 print(domain.g)
 a = domain.g
-for i in range(6):
+for i in range(10):
     if a is None:
         break
     print(a)
