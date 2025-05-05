@@ -5,6 +5,11 @@ echo "Press Enter to continue through each step";
 
 read nil;
 
+echo "\$ python3 ../main.py getcurve secp192k1 ./domain";
+read nil;
+python3 ../main.py getcurve secp192k1 ./domain;
+
+read nil;
 
 ls -1R;
 
