@@ -46,7 +46,7 @@ def listCurves(curve_id: str = None) -> list:
             domain = recommendedCurves[curve_id]
             return {
                 "identifier": curve_id,
-                "field": domain.field,
+                "field": domain.p,
                 "curve_a": domain.curve.a,
                 "curve_b": domain.curve.b,
                 "generator_x": domain.g.x,
